@@ -145,10 +145,19 @@ public class GuiArmor {
         int remainder = (4 - startingOffset);
 
         int x = left;
-        for(int i = 1; i < barPoints+1; i++) {
-            if(i % 2 != 0) {
+        /*for (int i = 1; i < barPoints+1; i++) {
+            if(i % 2 == 0 || i % 3 == 0) {
                 x += 4;
             }
+        }*/
+
+        for(int i = 0; i < barPoints; i++) {
+            if(i % 2 == 0) {
+                x += 4;
+            }
+        }
+        if (startingOffset == 3) {
+            x -= 4;
         }
 
         // Drawing icons starts here
