@@ -10,7 +10,14 @@
     },
     "special": {
         "default": 3,
-        "leadingMask": -1,
-        "trailingMask": -2
+        "1_0_mask": -9,
+        "1_1_mask": -8,
+        "1_2_mask": -7,
+        "1_3_mask": -6,
+        "2_0_mask": -5,
+        "2_1_mask": -4,
+        "2_2_mask": -3,
+        "3_0_mask": -2,
+        "3_1_mask": -1
     }
 }

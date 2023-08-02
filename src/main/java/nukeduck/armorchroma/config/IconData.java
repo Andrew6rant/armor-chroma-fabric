@@ -99,8 +99,16 @@ public class IconData implements SimpleResourceReloadListener<Void> {
 
             IconTable minecraft = mods.get(MINECRAFT);
             if (minecraft == null || minecraft.getSpecialIndex(DEFAULT) == null
-                    || minecraft.getSpecialIndex("leadingMask") == null
-                    || minecraft.getSpecialIndex("trailingMask") == null) {
+                    || minecraft.getSpecialIndex("1_0_mask") == null
+                    || minecraft.getSpecialIndex("1_1_mask") == null
+                    || minecraft.getSpecialIndex("1_2_mask") == null
+                    || minecraft.getSpecialIndex("1_3_mask") == null
+                    || minecraft.getSpecialIndex("2_0_mask") == null
+                    || minecraft.getSpecialIndex("2_1_mask") == null
+                    || minecraft.getSpecialIndex("2_2_mask") == null
+                    || minecraft.getSpecialIndex("3_0_mask") == null
+                    || minecraft.getSpecialIndex("3_1_mask") == null
+            ) {
                 // This should never happen unless the mod has been edited
                 throw new RuntimeException("Missing fallback icons. The mod is damaged");
             }
