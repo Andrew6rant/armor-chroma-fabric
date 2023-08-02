@@ -139,17 +139,10 @@ public class GuiArmor {
 
         if(glint) zOffset += 2; // Glint rows should appear on top of normal rows
 
-        //int i = barPoints & 1;
-        int armorDivisor = barPoints & 4;
         int startingOffset = barPoints % 4;
         int remainder = (4 - startingOffset);
 
         int x = left;
-        /*for (int i = 1; i < barPoints+1; i++) {
-            if(i % 2 == 0 || i % 3 == 0) {
-                x += 4;
-            }
-        }*/
 
         for(int i = 0; i < barPoints; i++) {
             if(i % 2 == 0) {
