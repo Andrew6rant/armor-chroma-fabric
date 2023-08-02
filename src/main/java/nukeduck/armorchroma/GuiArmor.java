@@ -10,6 +10,7 @@ import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributeInstance;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.util.Identifier;
 import nukeduck.armorchroma.config.ArmorIcon;
 import nukeduck.armorchroma.config.Util;
@@ -127,27 +128,10 @@ public class GuiArmor {
         }
     }
 
-    private void log(double randchance, String msg) {
-        log(randchance, msg, null);
-    }
-
-    private void log(double randchance, String msg, @Nullable Double chance) {
-        if (chance == null) {
-            chance = 0.999;
-        }
-        if (randchance >= chance) {
-            System.out.println(msg);
-        }
-    }
-
     /** Renders a partial row of icons, {@code stackPoints} wide
      * @param barPoints The points already in the bar
      * @param stackPoints The points in the ItemStack */
     private void drawPartialRow(DrawContext context, int left, int top, int barPoints, int stackPoints, ItemStack stack) {
-        double randchance = Math.random();
-        //double randchance = 0;
-        //System.out.println("left: " + left+", top: " + top+", barPoints: " + barPoints+", stackPoints: " + stackPoints+", stack: " + stack);
-        //log(randchance, "barPoints: " + barPoints+", stackPoints: " + stackPoints+", stack: " + stack, 0.999);
         ArmorIcon icon = ArmorChroma.ICON_DATA.getIcon(stack);
         RenderSystem.setShaderTexture(0, icon.texture);
 
@@ -160,101 +144,27 @@ public class GuiArmor {
         int startingOffset = barPoints % 4;
         int remainder = (4 - startingOffset);
 
-        int x = left + (barPoints * 4); // -8
-        //int x = left - 8;
-        /*if (barPoints % 4 == 0 && startingOffset != 0) {
-            x -= 4;
-        } if (barPoints % 2 == 0 && startingOffset != 0) {
-            x -= 4;
-        }*/
-
-        //System.out.println("armorDivisor: "+armorDivisor);
+        int x = left;
+        for(int i = 1; i < barPoints+1; i++) {
+            if(i % 2 != 0) {
+                x += 4;
+            }
+        }
 
         // Drawing icons starts here
-
-
         if (startingOffset != 0) { // leading icons
             drawMaskedIcon(context, x - 4, top, icon, ArmorChroma.ICON_DATA.getSpecial(Util.getModid(stack), Math.min(stackPoints, remainder)+"_"+startingOffset+"_mask"));
-            //TODO: get this working without crashes. For now, I have spit this into 4
-            /*if (startingOffset == 3) {
-                drawMaskedIcon(context, x - 4, top, icon, ArmorChroma.ICON_DATA.getSpecial(Util.getModid(stack), "1_3_mask"));
-                //stackPoints -= remainder;
-            }
-            else if (startingOffset == 2) {
-                //if (randchance >= 0.99) {
-                //    System.out.println(stack+", startingOffset: "+startingOffset+", remainder: "+remainder+", stackPoints: "+stackPoints);
-                //}
-                drawMaskedIcon(context, x - 8, top, icon, ArmorChroma.ICON_DATA.getSpecial(Util.getModid(stack), Math.min(stackPoints, remainder)+"_2_mask")); //Math.min(stackPoints, remainder)
-            }*/
-            //drawMaskedIcon(context, x - 4, top, icon, ArmorChroma.ICON_DATA.getSpecial(Util.getModid(stack), remainder+"_"+Math.max(Math.min(stackPoints, remainder), startingOffset)+"_mask")); // 1_3
             x += 4;
         }
-
-        //armorDivisor = armorDivisor - startingOffset;
-        //armorDivisor = armorDivisor - remainder;
         if (remainder != 4) {
-            //armorDivisor = armorDivisor - startingOffset;
-            //armorDivisor = armorDivisor - remainder;
             stackPoints = stackPoints - remainder;
         }
-
-        //if (randchance >= 0.95) {System.out.println(stack+" before armorDivisor: " +armorDivisor+ ", stackPoints: "+stackPoints);}
-
-        //int i = 0;
-        for (; armorDivisor <= stackPoints - 4; x += 8, stackPoints -= 4) { // Main body icons //
+        for (; stackPoints >= 4; x += 8, stackPoints -= 4) { // Main body icons //
             icon.draw(context, x, top, zOffset);
         }
-        //stackPoints = stackPoints - (4 * i);
-        //if (randchance >= 0.95) {
-            //System.out.println("----------------------stackPoints: "+stackPoints);
-            //.out.println(stack+" after armorDivisor: " +armorDivisor+ ", stackPoints: "+stackPoints);
-        //}
-
-
-        //for (; armorDivisor < stackPoints; stackPoints -= 4) { // Trailing icons //
-        //    icon.draw(context, x, top, zOffset);
-        //}
-        if (armorDivisor < stackPoints) { // Trailing icons
-            //log(randchance, "armorDivisor: " + armorDivisor+", stackPoints: " + stackPoints+", stack: " + stack, 0.99);
-            drawMaskedIcon(context, x, top, icon, ArmorChroma.ICON_DATA.getSpecial(Util.getModid(stack), stackPoints+"_0_mask"));
-            //System.out.println("armorDivisor: "+armorDivisor);
-            //if (startingOffset != 0) {
-                //if (randchance >= 0.99) {
-                //    System.out.println(stackPoints + "_0_mask");
-                //}
-                //System.out.println(((stackPoints - (4 - startingOffset)) - armorDivisor) +"_0_mask");
-                //drawMaskedIcon(context, x, top, icon, ArmorChroma.ICON_DATA.getSpecial(Util.getModid(stack), ((stackPoints - (4 - startingOffset)) - armorDivisor) +"_0_mask"));
-            //} else {
-                //if (randchance >= 0.99) {
-                //    System.out.println(stackPoints + "_0_mask");
-                //}
-            //System.out.println(stack+", "+stackPoints + "_0_mask!!!!!!!!");
-    //    drawMaskedIcon(context, x, top, icon, ArmorChroma.ICON_DATA.getSpecial(Util.getModid(stack), stackPoints + "_0_mask"));
-            //}
+        if (stackPoints > 0) { // Trailing icons
+            drawMaskedIcon(context, x, top, icon, ArmorChroma.ICON_DATA.getSpecial(Util.getModid(stack), stackPoints +"_0_mask"));
         }
-
-        /*if (armorDivisor < stackPoints) { // Trailing icons
-            if (startingOffset != 0) {
-                //System.out.println(((stackPoints - (4 - startingOffset)) - armorDivisor) +"_0_mask");
-                drawMaskedIcon(context, x, top, icon, ArmorChroma.ICON_DATA.getSpecial(Util.getModid(stack), ((stackPoints - (4 - startingOffset)) - armorDivisor) +"_0_mask"));
-            } else {
-                drawMaskedIcon(context, x + 8, top, icon, ArmorChroma.ICON_DATA.getSpecial(Util.getModid(stack), (stackPoints - armorDivisor) + "_0_mask"));
-            }
-        }*/
-
-        /*
-        if(i == 1) { // leading half icon
-            drawMaskedIcon(context, x - 4, top, icon, ArmorChroma.ICON_DATA.getSpecial(Util.getModid(stack), "leadingMask"));
-            x += 4;
-        }
-        for(; i < stackPoints - 1; i += 2, x += 8) { // Main body icons
-            icon.draw(context, x, top, zOffset);
-        }
-        if(i < stackPoints) { // Trailing half icon
-            drawMaskedIcon(context, x, top, icon, ArmorChroma.ICON_DATA.getSpecial(Util.getModid(stack), "trailingMask"));
-        }*/
-
-
 
         if(glint) { // Draw one glint quad for the whole row
             this.drawTexturedGlintRect(context, left + barPoints * 4, top, left, 0, stackPoints*4 + 1, 9);
