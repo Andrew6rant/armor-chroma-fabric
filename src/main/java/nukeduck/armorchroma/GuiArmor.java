@@ -42,10 +42,10 @@ public class GuiArmor {
     private static final int[] BG_COLORS = {0x3acaff, 0x3be55a, 0xffff00, 0xff9d00, 0xed3200, 0x7130c1};
 
     /** The vertical distance between the top of each row */
-    private static final int ROW_SPACING = 5;
+    private static final int ROW_SPACING = 10;
 
     /** The number of armor points per row in the armor bar */
-    private static final int ARMOR_PER_ROW = 20;
+    private static final int ARMOR_PER_ROW = 24;
 
     /** Fallback attributes required when getting the player's armor */
     private static final DefaultAttributeContainer FALLBACK_ATTRIBUTES = DefaultAttributeContainer.builder()
@@ -56,7 +56,7 @@ public class GuiArmor {
 
     /** Render the bar as a full replacement for vanilla */
     public void draw(DrawContext context, int left, int top) {
-        Map<EquipmentSlot, Integer> pointsMap = new LinkedHashMap<>();
+        LinkedHashMap<EquipmentSlot, Integer> pointsMap = new LinkedHashMap<>();
         int totalPoints = getArmorPoints(client.player, pointsMap);
         if (totalPoints <= 0) return;
 
@@ -73,8 +73,12 @@ public class GuiArmor {
 
         for(Entry<EquipmentSlot, Integer> entry : pointsMap.entrySet()) {
             //noinspection ConstantConditions (nullable stuff)
-            drawPiece(context, left, top, barPoints, entry.getValue(), client.player.getEquippedStack(entry.getKey()));
-            barPoints += entry.getValue();
+            ItemStack stack = client.player.getEquippedStack(entry.getKey());
+
+            drawPiece(context, left, top, barPoints, entry.getValue(), stack);
+            if (stack.getItem() != Items.ELYTRA) {
+                barPoints += entry.getValue();
+            }
         }
         // Most negative zOffset here
         drawBackground(context, left, top, compressedRows);
@@ -93,14 +97,16 @@ public class GuiArmor {
         // Plain background
         if (ArmorChroma.config.renderBackground() || drawBorder) {
             RenderSystem.setShaderColor(1, 1, 1, 1);
-            context.drawTexture(BACKGROUND, x, y, zOffset, 0, 0, 81, 9, TEXTURE_SIZE, TEXTURE_SIZE);
+            context.drawTexture(BACKGROUND, x, y, zOffset, 0, 0, 81, 9, 128, 128);
         }
+
+        context.drawTexture(BACKGROUND, x+24, y+10, zOffset, 0, 20, 9, 9, 128, 128);
 
         // Colored border
         if (drawBorder) {
             int color = level <= BG_COLORS.length ? BG_COLORS[level-1] : BG_COLORS[BG_COLORS.length-1];
             Util.setColor(color);
-            context.drawTexture(BACKGROUND, x - 1, y - 1, zOffset, 81, 0, 83, 11, TEXTURE_SIZE, TEXTURE_SIZE);
+            context.drawTexture(BACKGROUND, x - 1, y - 1, zOffset, 0, 9, 83, 11, 128, 128);
         }
     }
 
@@ -142,7 +148,17 @@ public class GuiArmor {
         int startingOffset = barPoints % 4;
         int remainder = (4 - startingOffset);
 
-        int x = left;
+        int x = left + 8;
+
+        //System.out.println(stack.getItem());
+        if (stack.getItem() == Items.ELYTRA) {
+            // I need to draw this separately since the overlay textures only work for ones shaped like armor
+            icon.drawElytra(context, x-8, top, zOffset, barPoints);
+            stackPoints = 0; // this will skip the rest of the drawing
+            //return;
+            //barPoints = barPoints - 2;
+            //System.out.println("ok");
+        }
 
         for(int i = 0; i < barPoints; i++) {
             if(i % 2 == 0) {
@@ -155,7 +171,7 @@ public class GuiArmor {
 
         // Drawing icons starts here
         if (startingOffset != 0) { // leading icons
-            drawMaskedIcon(context, x - 4, top, icon, ArmorChroma.ICON_DATA.getSpecial(Util.getModid(stack), Math.min(stackPoints, remainder)+"_"+startingOffset+"_mask"));
+            drawMaskedIcon(context, x - 4, top, icon, ArmorChroma.ICON_DATA.getSpecial(Util.getModid(stack), Math.min(stackPoints, remainder) + "_" + startingOffset + "_mask"));
             x += 4;
         }
         if (remainder != 4) {
@@ -165,13 +181,14 @@ public class GuiArmor {
             icon.draw(context, x, top, zOffset);
         }
         if (stackPoints > 0) { // Trailing icons
-            drawMaskedIcon(context, x, top, icon, ArmorChroma.ICON_DATA.getSpecial(Util.getModid(stack), stackPoints +"_0_mask"));
+            drawMaskedIcon(context, x, top, icon, ArmorChroma.ICON_DATA.getSpecial(Util.getModid(stack), stackPoints + "_0_mask"));
         }
 
-        if(glint) { // Draw one glint quad for the whole row
-            this.drawTexturedGlintRect(context, left + barPoints * 4, top, left, 0, stackPoints*4 + 1, 9);
+        if (glint) { // Draw one glint quad for the whole row
+            this.drawTexturedGlintRect(context, left + barPoints * 4, top, left, 0, stackPoints * 4 + 1, 9);
             zOffset -= 2;
         }
+
     }
 
     /** Finds all items in the player's equipment slots that provide armor
@@ -179,7 +196,7 @@ public class GuiArmor {
      * @param player The player holding the items
      * @param pointsMap The map of each slot's points
      * @return The total number of armor points the player has */
-    private int getArmorPoints(ClientPlayerEntity player, Map<EquipmentSlot, Integer> pointsMap) {
+    private int getArmorPoints(ClientPlayerEntity player, LinkedHashMap<EquipmentSlot, Integer> pointsMap) {
         AttributeContainer attributes = new AttributeContainer(FALLBACK_ATTRIBUTES);
         EntityAttributeInstance armor = attributes.getCustomInstance(EntityAttributes.GENERIC_ARMOR);
         if (armor == null) return 0;
@@ -192,6 +209,10 @@ public class GuiArmor {
             Util.reverse(slots);
         }
 
+        //Util.orderElytra(slots);
+
+        EquipmentSlot hasElytra = null;
+        int elytraPoints = 0;
         for(EquipmentSlot slot : slots) {
             ItemStack stack = player.getEquippedStack(slot);
             attributes.addTemporaryModifiers(stack.getAttributeModifiers(slot));
@@ -200,8 +221,27 @@ public class GuiArmor {
             int points = attrNext - attrLast;
             attrLast = attrNext;
 
+            if (stack.getItem() == Items.ELYTRA) {
+                hasElytra = slot;
+                elytraPoints = points;
+            }
             if(points > 0) pointsMap.put(slot, points);
         }
+
+        if (hasElytra != null) {
+            LinkedHashMap<EquipmentSlot, Integer> newMap = (LinkedHashMap<EquipmentSlot, Integer>) pointsMap.clone();
+            pointsMap.clear();
+            pointsMap.put(hasElytra, elytraPoints);
+            pointsMap.putAll(newMap);
+            /*
+            LinkedHashMap<EquipmentSlot, Integer>  newMap = new LinkedHashMap<>(pointsMap.size());
+            Integer elytraPoints = pointsMap.remove(hasElytra);
+            newMap.put(hasElytra, elytraPoints);
+            newMap.putAll(pointsMap);
+            System.out.println("YOOO");
+            pointsMap = newMap;*/
+        }
+
         return attrLast;
     }
 

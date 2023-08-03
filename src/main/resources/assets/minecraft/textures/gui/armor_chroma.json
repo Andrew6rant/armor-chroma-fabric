@@ -1,4 +1,7 @@
 {
+    "items": {
+        "elytra": 6
+    },
     "materials": {
         "chainmail": 0,
         "diamond": 1,
@@ -6,7 +9,7 @@
         "iron": 3,
         "leather": 4,
         "turtle": 5,
-        "netherite": 6
+        "netherite": 7
     },
     "special": {
         "default": 3,

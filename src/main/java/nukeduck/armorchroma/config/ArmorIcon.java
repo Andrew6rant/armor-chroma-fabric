@@ -47,4 +47,12 @@ public class ArmorIcon {
         Util.setColor(color);
         context.drawTexture(texture, x, y, z, u, v, ICON_SIZE, ICON_SIZE, TEXTURE_SIZE, TEXTURE_SIZE);
     }
+
+    public void drawElytra(DrawContext context, int x, int y, int z, int barPoints) {
+        RenderSystem.setShaderTexture(0, texture);
+        Util.setColor(color);
+        //System.out.println("x: " + x + " y: " + y + " z: "+ z+" u: "+u+" v: "+v);
+        context.drawTexture(texture, x, y, z, u, v, ICON_SIZE, ICON_SIZE, TEXTURE_SIZE, TEXTURE_SIZE);
+
+    }
 }

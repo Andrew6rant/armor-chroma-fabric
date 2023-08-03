@@ -1,13 +1,16 @@
 package nukeduck.armorchroma.config;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.item.DyeableItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 public final class Util {
 
